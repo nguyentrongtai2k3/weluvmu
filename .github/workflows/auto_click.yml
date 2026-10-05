@@ -3,8 +3,8 @@ name: Auto Click Bot
 
 on:
   schedule:
-    # Chạy mỗi 6 phút (Cú pháp Cron)
-    - cron: '*/6 * * * *'
+    # Chạy mỗi 5 phút (Cú pháp Cron)
+    - cron: '*/5 * * * *'
 
   # Cho phép mày bấm nút chạy bằng tay trên web GitHub để test
   workflow_dispatch:
