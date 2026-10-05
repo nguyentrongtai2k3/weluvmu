@@ -1,3 +1,4 @@
+import random
 import time
 import threading
 from flask import Flask
@@ -48,8 +49,11 @@ def run_bot_forever():
         print(f"\n--- Lượt {count} ---")
         perform_click()
         count += 1
-        print("[*] Ngủ 120s chờ vòng tiếp theo...")
-        time.sleep(120)
+        # Delay ngẫu nhiên giữa các lần mở trình duyệt để tránh bị ban IP quá nhanh
+        dela = random.randint(1, 1000)
+        delay = random.uniform(2, dela)
+        print(f"[*] Chờ {delay:.2f}s trước khi mở cửa sổ mới...")
+        time.sleep(delay)
 
 
 if __name__ == "__main__":
