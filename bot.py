@@ -1,5 +1,5 @@
-# bot.py
 import time
+import random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -17,33 +17,31 @@ def perform_click():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--incognito")
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option('useAutomationExtension', False)
 
-    # Khởi tạo driver (GitHub Actions ubuntu-latest đã có sẵn Chrome)
     driver = webdriver.Chrome(options=options)
-
     try:
         print(f"[*] Đang mở trang: {TARGET_URL}")
         driver.get(TARGET_URL)
-
-        # Đợi DOM load
         wait = WebDriverWait(driver, 15)
         button = wait.until(EC.presence_of_element_located((By.ID, BUTTON_ID)))
-
-        # Click bằng Javascript
         driver.execute_script("arguments[0].click();", button)
-        print("[+] Click thành công trên GitHub Actions!")
-
-        # Ngủ 2s để trình duyệt kịp gửi request về server web trước khi bị kill
-        time.sleep(2)
-
+        print("[+] Click thành công!")
     except Exception as e:
         print(f"[-] Lỗi: {e}")
     finally:
         driver.quit()
-        print("[*] Hoàn thành job.")
+        print("[*] Dọn dẹp RAM xong.")
 
 
 if __name__ == "__main__":
-    perform_click()
+    print("🚀 Khởi động Worker Auto Click...")
+    count = 1
+    while True:
+        print(f"\n--- Lượt {count} ---")
+        perform_click()
+        count += 1
+
+        # Ngủ 2 phút (120 giây) trước khi chạy vòng mới
+        delay = 120
+        print(f"[*] Ngủ {delay}s chờ vòng tiếp theo...")
+        time.sleep(delay)
