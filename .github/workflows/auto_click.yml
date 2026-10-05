@@ -3,8 +3,8 @@ name: Auto Click Bot
 
 on:
   schedule:
-    # Chạy mỗi 5 phút (Cú pháp Cron)
-    - cron: '*/5 * * * *'
+    # Chạy mỗi 10 phút (Cú pháp Cron)
+    - cron: '*/10 * * * *'
 
   # Cho phép mày bấm nút chạy bằng tay trên web GitHub để test
   workflow_dispatch:
@@ -28,3 +28,4 @@ jobs:
 
       - name: Chạy Script Bot
         run: python bot.py
+# Force reset scheduler
