@@ -1,5 +1,6 @@
 import time
-import random
+import threading
+from flask import Flask
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -7,6 +8,14 @@ from selenium.webdriver.support import expected_conditions as EC
 
 TARGET_URL = "https://weluvunited.com/glazers-out?ref=trongtai"
 BUTTON_ID = "btn-yes-i-will"
+
+app = Flask(__name__)
+
+
+# Web server giả để lừa Render
+@app.route('/')
+def keep_alive():
+    return "Render thấy web đang sống, còn Bot thì đang chạy ngầm!"
 
 
 def perform_click():
@@ -30,18 +39,22 @@ def perform_click():
         print(f"[-] Lỗi: {e}")
     finally:
         driver.quit()
-        print("[*] Dọn dẹp RAM xong.")
 
 
-if __name__ == "__main__":
+def run_bot_forever():
     print("🚀 Khởi động Worker Auto Click...")
     count = 1
     while True:
         print(f"\n--- Lượt {count} ---")
         perform_click()
         count += 1
+        print("[*] Ngủ 120s chờ vòng tiếp theo...")
+        time.sleep(120)
 
-        # Ngủ 2 phút (120 giây) trước khi chạy vòng mới
-        delay = 120
-        print(f"[*] Ngủ {delay}s chờ vòng tiếp theo...")
-        time.sleep(delay)
+
+if __name__ == "__main__":
+    # Tách luồng: Bot chạy một đường, Web chạy một đường
+    threading.Thread(target=run_bot_forever, daemon=True).start()
+
+    # Mở port 10000 cho Render
+    app.run(host='0.0.0.0', port=10000)
