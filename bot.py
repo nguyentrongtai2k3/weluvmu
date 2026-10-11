@@ -9,6 +9,8 @@ from selenium.webdriver.support import expected_conditions as EC
 
 TARGET_URL = "https://weluvunited.com/glazers-out?ref=trongtai"
 BUTTON_ID = "btn-yes-i-will"
+LET_DO_THIS_XPATH="/html/body/div[1]/div/div/div[2]/button[2]"
+SPONSOR_POPUP="/html/body/div[1]/div/main/section[2]/div/div[1]/div/div[2]/div/div[1]/button[1]"
 
 app = Flask(__name__)
 
@@ -33,9 +35,42 @@ def perform_click():
         print(f"[*] Đang mở trang: {TARGET_URL}")
         driver.get(TARGET_URL)
         wait = WebDriverWait(driver, 15)
-        button = wait.until(EC.presence_of_element_located((By.ID, BUTTON_ID)))
-        driver.execute_script("arguments[0].click();", button)
-        print("[+] Click thành công!")
+        button_yes_iwill = wait.until(EC.presence_of_element_located((By.ID, BUTTON_ID)))
+        button_let_do_this = wait.until(EC.presence_of_element_located((By.XPATH, LET_DO_THIS_XPATH)))
+
+        # BƯỚC 1: Click Yes I Will
+        driver.execute_script("arguments[0].click();", button_yes_iwill)
+        print("[+] Đã click nút 'Yes I will'!")
+        time.sleep(1)
+
+        # BƯỚC 2: Random click let do this
+        driver.execute_script("arguments[0].click();", button_let_do_this)
+        print("[+] Đã click nút 'LET'S DO THIS!' trên popup!")
+        time.sleep(1)
+
+        # BƯỚC 3: Random click Sponsor
+        num_sponsors = random.randint(1, 12)
+        print(f"[*] Sẽ chọn ngẫu nhiên {num_sponsors} sponsors...")
+        time.sleep(1)
+
+        # random.sample giúp lấy ra N số ngẫu nhiên KHÔNG TRÙNG LẶP từ 1 đến 12
+        sponsor_indices = random.sample(range(1, 13), num_sponsors)
+
+        for index in sponsor_indices:
+            # Gắn biến x vào XPath
+            sponsor_xpath = f"/html/body/div[1]/div/main/section[2]/div/div[1]/div/div[2]/div/div[1]/button[{index}]"
+            try:
+                sponsor_btn = wait.until(EC.presence_of_element_located((By.XPATH, sponsor_xpath)))
+                driver.execute_script("arguments[0].click();", sponsor_btn)
+                print(f"  -> Đã click sponsor ở vị trí x = {index}")
+
+                # Delay ngẫu nhiên 0.5 - 1.5s giữa các lần chọn để giống người thật
+                time.sleep(random.uniform(0.5, 1.5))
+            except Exception as ex:
+                print(f"  -> Bỏ qua vị trí {index} vì chưa tìm thấy nút (Lỗi phụ)")
+
+        print("[+] Hoàn thành toàn bộ luồng click cho lượt này!")
+
     except Exception as e:
         print(f"[-] Lỗi: {e}")
     finally:
