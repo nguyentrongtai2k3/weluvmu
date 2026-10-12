@@ -1,3 +1,4 @@
+import datetime
 import random
 import time
 import threading
@@ -10,7 +11,6 @@ from selenium.webdriver.support import expected_conditions as EC
 TARGET_URL = "https://weluvunited.com/glazers-out?ref=trongtai"
 BUTTON_ID = "btn-yes-i-will"
 LET_DO_THIS_XPATH="/html/body/div[1]/div/div/div[2]/button[2]"
-SPONSOR_POPUP="/html/body/div[1]/div/main/section[2]/div/div[1]/div/div[2]/div/div[1]/button[1]"
 
 app = Flask(__name__)
 
@@ -20,6 +20,24 @@ app = Flask(__name__)
 def keep_alive():
     return "Render thấy web đang sống, còn Bot thì đang chạy ngầm!"
 
+
+def get_dynamic_delay():
+    # Lấy giờ hiện tại theo múi giờ Việt Nam (UTC+7)
+    utc_now = datetime.datetime.utcnow()
+    vn_time = utc_now + datetime.timedelta(hours=7)
+    hour = vn_time.hour
+
+    # Phân bổ traffic theo hành vi sinh hoạt của người thật
+    if 0 <= hour < 6:
+        return random.uniform(300, 600)  # Đêm khuya: 5 - 10 phút/lần
+    elif 6 <= hour < 11:
+        return random.uniform(60, 180)  # Sáng: 1 - 3 phút/lần
+    elif 11 <= hour < 14:
+        return random.uniform(15, 45)  # Nghỉ trưa: 15 - 45s/lần
+    elif 14 <= hour < 19:
+        return random.uniform(60, 150)  # Chiều: 1 - 2.5 phút/lần
+    else:
+        return random.uniform(5, 20)  # Tối (Giờ vàng): 5 - 20s/lần
 
 def perform_click():
     options = webdriver.ChromeOptions()
@@ -84,10 +102,13 @@ def run_bot_forever():
         print(f"\n--- Lượt {count} ---")
         perform_click()
         count += 1
-        # Delay ngẫu nhiên giữa các lần mở trình duyệt để tránh bị ban IP quá nhanh
-        dela = random.randint(1, 1000)
-        delay = random.uniform(2, dela)
-        print(f"[*] Chờ {delay:.2f}s trước khi mở cửa sổ mới...")
+        # Lấy delay động theo khung giờ sinh học
+        delay = get_dynamic_delay()
+
+        # In thêm khung giờ hiện tại ra Log để dễ theo dõi
+        utc_now = datetime.datetime.utcnow()
+        vn_time = utc_now + datetime.timedelta(hours=7)
+        print(f"[*] [Khung giờ: {vn_time.strftime('%H:%M')}] Chờ {delay:.2f}s trước khi mở cửa sổ mới...")
         time.sleep(delay)
 
 
