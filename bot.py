@@ -27,17 +27,22 @@ def get_dynamic_delay():
     vn_time = utc_now + datetime.timedelta(hours=7)
     hour = vn_time.hour
 
-    # Phân bổ traffic theo hành vi sinh hoạt của người thật
+    # Phân bổ 60-70 traffic/ngày theo hành vi sinh hoạt
     if 0 <= hour < 6:
-        return random.uniform(300, 600)  # Đêm khuya: 5 - 10 phút/lần
+        # Đêm khuya: 50 - 100 phút/lần
+        return random.uniform(3000, 6000)
     elif 6 <= hour < 11:
-        return random.uniform(60, 180)  # Sáng: 1 - 3 phút/lần
+        # Sáng: 15 - 35 phút/lần
+        return random.uniform(900, 2100)
     elif 11 <= hour < 14:
-        return random.uniform(15, 45)  # Nghỉ trưa: 15 - 45s/lần
+        # Nghỉ trưa: 6 - 16 phút/lần
+        return random.uniform(400, 1000)
     elif 14 <= hour < 19:
-        return random.uniform(60, 150)  # Chiều: 1 - 2.5 phút/lần
+        # Chiều: 15 - 30 phút/lần
+        return random.uniform(900, 1800)
     else:
-        return random.uniform(5, 20)  # Tối (Giờ vàng): 5 - 20s/lần
+        # Tối (Giờ vàng): 10 - 20 phút/lần
+        return random.uniform(600, 1200)
 
 def perform_click():
     options = webdriver.ChromeOptions()
