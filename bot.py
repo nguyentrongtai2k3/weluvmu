@@ -31,11 +31,14 @@ def get_dynamic_delay():
     hour = vn_time.hour
 
     if 0 <= hour < 6:
-        return (60, 300)
+        # Đêm khuya: Chờ ngẫu nhiên từ 2 phút đến 8 phút
+        return random.uniform(120, 480)
     elif 11 <= hour < 14 or 19 <= hour < 24:
+        # Giờ cao điểm (Trưa & Tối): Spam nhịp độ khó đoán, từ 30 giây đến 3 phút
         return random.uniform(30, 180)
     else:
-        return random.uniform(30, 120)
+        # Các giờ bình thường: Lướt rải rác từ 1 phút đến 5 phút
+        return random.uniform(60, 300)
 
 
 def perform_api_call():
