@@ -31,11 +31,11 @@ def get_dynamic_delay():
     hour = vn_time.hour
 
     if 0 <= hour < 6:
-        return random.uniform(30, 60)
+        return (60, 300)
     elif 11 <= hour < 14 or 19 <= hour < 24:
-        return random.uniform(15, 30)
+        return random.uniform(30, 180)
     else:
-        return random.uniform(5, 20)
+        return random.uniform(30, 120)
 
 
 def perform_api_call():
