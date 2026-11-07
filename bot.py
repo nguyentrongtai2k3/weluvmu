@@ -1,6 +1,7 @@
-# auto_clicker.py
 import time
 import random
+import threading
+from flask import Flask
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -10,6 +11,14 @@ from selenium.common.exceptions import TimeoutException, WebDriverException
 # Cấu hình
 TARGET_URL = "https://weluvunited.com/glazers-out?ref=trongtai"
 BUTTON_ID = "btn-yes-i-will"
+
+# Khởi tạo Web Server giả
+app = Flask(__name__)
+
+
+@app.route('/')
+def keep_alive():
+    return "Render thấy web sống, còn Bot Selenium thì đang cày ngầm!"
 
 
 def perform_click():
@@ -56,8 +65,9 @@ def perform_click():
         driver.quit()
 
 
-if __name__ == "__main__":
-    print("🚀 Bắt đầu tool auto-click. Bấm Ctrl+C để dừng.")
+def run_bot_forever():
+    """Hàm chạy ngầm vòng lặp vô tận của Bot"""
+    print("🚀 Bắt đầu tool auto-click chạy ngầm. Bấm Ctrl+C để dừng.")
     count = 1
     try:
         while True:
@@ -72,3 +82,12 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         print("\n🛑 Đã dừng tool theo yêu cầu (Ctrl+C).")
+
+
+if __name__ == "__main__":
+    # 1. Bật bot Selenium chạy ở một luồng riêng biệt (Daemon Thread)
+    bot_thread = threading.Thread(target=run_bot_forever, daemon=True)
+    bot_thread.start()
+
+    # 2. Bật Web Server giả ở luồng chính để Render kiểm tra qua môn
+    app.run(host='0.0.0.0', port=10000)
