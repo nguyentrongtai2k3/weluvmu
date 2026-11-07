@@ -1,85 +1,74 @@
-import requests
-import random
+# auto_clicker.py
 import time
-import threading
-import datetime
-import uuid  # Thêm thư viện tạo mã định danh ngẫu nhiên
-from flask import Flask
+import random
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, WebDriverException
 
-# Mày tự copy URL trong tab "Headers -> Request URL" dán vào đây nhé
-API_URL = "https://weluvunited.com/api/actions"
-
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "application/json, text/plain, */*",
-    "Content-Type": "application/json",
-    "Origin": "https://weluvunited.com",
-    "Referer": "https://weluvunited.com/glazers-out?ref=trongtai"
-}
-
-app = Flask(__name__)
+# Cấu hình
+TARGET_URL = "https://weluvunited.com/glazers-out?ref=trongtai"
+BUTTON_ID = "btn-yes-i-will"
 
 
-@app.route('/')
-def keep_alive():
-    return "Bot API đang chạy!"
+def perform_click():
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless=new")
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--incognito")
 
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-software-rasterizer")
+    options.add_argument("--disable-default-apps")
+    options.add_argument("--mute-audio")
+    options.add_argument("--no-zygote")
+    options.add_argument('--blink-settings=imagesEnabled=false')
 
-def get_dynamic_delay():
-    utc_now = datetime.datetime.now(datetime.timezone.utc)
-    vn_time = utc_now + datetime.timedelta(hours=7)
-    hour = vn_time.hour
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
+    options.add_argument("--disable-blink-features=AutomationControlled")
 
-    if 0 <= hour < 6:
-        # Đêm khuya: Chờ ngẫu nhiên từ 2 phút đến 8 phút
-        return random.uniform(120, 480)
-    elif 11 <= hour < 14 or 19 <= hour < 24:
-        # Giờ cao điểm (Trưa & Tối): Spam nhịp độ khó đoán, từ 30 giây đến 3 phút
-        return random.uniform(30, 180)
-    else:
-        # Các giờ bình thường: Lướt rải rác từ 1 phút đến 5 phút
-        return random.uniform(60, 300)
-
-
-def perform_api_call():
+    driver = webdriver.Chrome(options=options)
     try:
-        # Tự động sinh chuỗi mã hóa 32 ký tự giống hệt định dạng của web
-        fake_token = uuid.uuid4().hex
+        driver.get(TARGET_URL)
+        wait = WebDriverWait(driver, 15)  # Nới lên 15s cho an toàn
 
-        # Nhét token ảo, actionNumber 2 và choice "yes" vào cấu trúc Payload
-        PAYLOAD = {
-            "visitorToken": fake_token,
-            "actionNumber": 2,
-            "choice": "yes"
-        }
+        # SỬA LỖI 1: Chờ đến khi nút thực sự ở trạng thái "có thể click"
+        button_yes_iwill = wait.until(EC.element_to_be_clickable((By.ID, BUTTON_ID)))
 
-        response = requests.post(API_URL, json=PAYLOAD, headers=HEADERS, timeout=10)
+        # SỬA LỖI 2: Cuộn màn hình để ép cái nút ra chính giữa, né các thanh menu bị ghim ở đỉnh/đáy màn hình
+        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", button_yes_iwill)
+        time.sleep(0.5)  # Đợi một nhịp cực ngắn để hiệu ứng cuộn dừng hẳn
 
-        if response.status_code in [200, 201]:
-            print(f"[+] Thành công! (Fake Token: {fake_token[:8]}...)")
-        else:
-            print(f"[-] Lỗi {response.status_code}: {response.text}")
+        # SỬA LỖI 3: Dùng JS ép click xuyên qua mọi layer vô hình đang đè lên
+        driver.execute_script("arguments[0].click();", button_yes_iwill)
+        print("[+] Đã click 'Yes I will'. Cắt bỏ hoàn toàn Sponsor!")
 
-    except requests.exceptions.RequestException as e:
-        print(f"[-] Lỗi mạng: {e}")
+        time.sleep(1)
 
-
-def run_bot_forever():
-    print("🚀 Worker API-Request (RAM 0MB) Khởi động...")
-    count = 1
-    while True:
-        print(f"\n--- Lượt {count} ---")
-        perform_api_call()
-
-        count += 1
-        delay = get_dynamic_delay()
-
-        utc_now = datetime.datetime.now(datetime.timezone.utc)
-        vn_time = utc_now + datetime.timedelta(hours=7)
-        print(f"[*] [Khung giờ: {vn_time.strftime('%H:%M')}] Chờ {delay:.2f}s...")
-        time.sleep(delay)
+    except Exception as e:
+        print(f"[-] Lỗi lượt chạy: {e}")
+    finally:
+        driver.quit()
 
 
 if __name__ == "__main__":
-    threading.Thread(target=run_bot_forever, daemon=True).start()
-    app.run(host='0.0.0.0', port=10000)
+    print("🚀 Bắt đầu tool auto-click. Bấm Ctrl+C để dừng.")
+    count = 1
+    try:
+        while True:
+            print(f"--- Vòng lặp thứ {count} ---")
+            perform_click()
+            count += 1
+
+            # Delay ngẫu nhiên giữa các lần mở trình duyệt để tránh bị ban IP quá nhanh
+            delay = random.uniform(2, 5)
+            print(f"[*] Chờ {delay:.2f}s trước khi mở cửa sổ mới...")
+            time.sleep(delay)
+
+    except KeyboardInterrupt:
+        print("\n🛑 Đã dừng tool theo yêu cầu (Ctrl+C).")
