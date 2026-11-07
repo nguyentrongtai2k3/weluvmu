@@ -1,6 +1,4 @@
 # auto_clicker.py
-import gc
-import os
 import time
 import random
 from selenium import webdriver
@@ -12,18 +10,7 @@ from selenium.common.exceptions import TimeoutException, WebDriverException
 # Cấu hình
 TARGET_URL = "https://weluvunited.com/glazers-out?ref=trongtai"
 BUTTON_ID = "btn-yes-i-will"
-def force_kill_chrome():
-    """Bắn bỏ mọi tiến trình Chrome treo ngầm để giải phóng RAM"""
-    try:
-        if os.name == 'nt':
-            # Lệnh dọn rác RAM khi chạy trên Windows
-            os.system("taskkill /f /im chrome.exe >nul 2>&1")
-            os.system("taskkill /f /im chromedriver.exe >nul 2>&1")
-        else:
-            # Lệnh dọn rác RAM khi chạy trên Linux/Mac
-            os.system("killall -9 chrome chromedriver 2>/dev/null")
-    except:
-        pass
+
 
 def perform_click():
     options = webdriver.ChromeOptions()
@@ -76,18 +63,11 @@ if __name__ == "__main__":
         while True:
             print(f"--- Vòng lặp thứ {count} ---")
             perform_click()
-
-            # ==========================================
-            # DỌN DẸP BỘ NHỚ SAU MỖI LƯỢT CHẠY
-            # ==========================================
-            force_kill_chrome()  # Tiêu diệt tiến trình ngầm của Chrome
-            gc.collect()  # Yêu cầu Python thu hồi RAM rác
-
             count += 1
 
             # Delay ngẫu nhiên giữa các lần mở trình duyệt để tránh bị ban IP quá nhanh
             delay = random.uniform(2, 5)
-            print(f"[*] Dọn RAM xong! Chờ {delay:.2f}s trước khi mở cửa sổ mới...")
+            print(f"[*] Chờ {delay:.2f}s trước khi mở cửa sổ mới...")
             time.sleep(delay)
 
     except KeyboardInterrupt:
