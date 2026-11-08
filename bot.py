@@ -54,7 +54,7 @@ def force_kill_chrome():
 
 def perform_click():
     options = webdriver.ChromeOptions()
-    # options.add_argument("--headless=new")
+    options.add_argument("--headless=new")
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
@@ -90,22 +90,6 @@ def perform_click():
         print("[+] Đã click 'LET'S DO THIS!'")
         time.sleep(1.5)
 
-        # num_sponsors = random.randint(1, 12)
-        # print(f"[*] Sẽ chọn ngẫu nhiên {num_sponsors} sponsors...")
-        # sponsor_indices = random.sample(range(1, 13), num_sponsors)
-        #
-        # for index in sponsor_indices:
-        #     sponsor_xpath = f"/html/body/div[1]/div/main/section[2]/div/div[1]/div/div[2]/div/div[1]/button[{index}]"
-        #     try:
-        #         sponsor_btn = wait.until(EC.presence_of_element_located((By.XPATH, sponsor_xpath)))
-        #         driver.execute_script("arguments[0].click();", sponsor_btn)
-        #         print(f"  -> Đã click sponsor ở vị trí x = {index}")
-        #         time.sleep(random.uniform(0.3, 0.8))  # Giảm thời gian chờ giữa các lần click Sponsor xuống
-        #     except:
-        #         pass
-
-        # print(f"[+] Đã chọn {num_sponsors} sponsors. Hoàn thành!")
-
     except Exception as e:
         print(f"[-] Lỗi lượt chạy: {e}")
     finally:
@@ -124,11 +108,8 @@ def run_bot_forever():
             gc.collect()
 
         count += 1
-        delay = random.uniform(5, 10)
-
-        utc_now = datetime.datetime.now(datetime.timezone.utc)
-        vn_time = utc_now + datetime.timedelta(hours=7)
-        print(f"[*] [Khung giờ: {vn_time.strftime('%H:%M')}] Dọn RAM xong! Chờ {delay:.2f}s trước khi mở lại...")
+        delay = random.uniform(2, 5)
+        print(f"[*] Chờ {delay:.2f}s trước khi mở lại...")
         time.sleep(delay)
 
 
