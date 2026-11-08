@@ -8,7 +8,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, WebDriverException
 
 # Cấu hình
 TARGET_URL = "https://weluvunited.com/glazers-out?ref=trongtai"
@@ -37,7 +36,7 @@ def force_kill_chrome():
 def perform_click():
     """Khởi tạo, thao tác và đóng hẳn trình duyệt trong cùng 1 lượt"""
     options = webdriver.ChromeOptions()
-    # options.add_argument("--headless=new")
+    options.add_argument("--headless")  # Đổi về headless cơ bản cho Linux
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
@@ -48,15 +47,18 @@ def perform_click():
     options.add_argument("--disable-software-rasterizer")
     options.add_argument("--disable-default-apps")
     options.add_argument("--mute-audio")
-    options.add_argument("--no-zygote")
+    # Xóa cờ --no-zygote để tránh lỗi Chrome instance exited trên VPS
     options.add_argument('--blink-settings=imagesEnabled=false')
 
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
     options.add_argument("--disable-blink-features=AutomationControlled")
 
-    driver = webdriver.Chrome(options=options)
+    driver = None  # Khai báo biến trước
     try:
+        # BỌC LỆNH MỞ CHROME VÀO ĐÂY. Nếu lỗi, vòng lặp ngoài sẽ bỏ qua và thử lại lượt sau.
+        driver = webdriver.Chrome(options=options)
+
         driver.get(TARGET_URL)
         wait = WebDriverWait(driver, 15)
 
@@ -71,20 +73,20 @@ def perform_click():
         time.sleep(1)
 
     except Exception as e:
-        print(f"[-] Lỗi lượt chạy: {e}")
+        print(f"[-] Lỗi lượt chạy (Đã bắt lỗi, Bot vẫn sẽ chạy tiếp): {e}")
     finally:
-        # Chắc chắn đóng Chrome ở cuối lượt
-        try:
-            driver.quit()
-        except:
-            pass
+        # Chắc chắn đóng Chrome ở cuối lượt dù có lỗi hay không
+        if driver is not None:
+            try:
+                driver.quit()
+            except:
+                pass
 
 
 def run_bot_forever():
     """Hàm chạy ngầm vòng lặp vô tận của Bot"""
     print("🚀 Bắt đầu tool auto-click (Cơ chế Đóng/Mở liên tục). Bấm Ctrl+C để dừng.")
 
-    # Dọn dẹp tàn dư trước khi vào lặp
     force_kill_chrome()
     count = 1
 
@@ -92,7 +94,7 @@ def run_bot_forever():
         while True:
             print(f"--- Vòng lặp thứ {count} ---")
 
-            # Gọi hàm click (tự động mở Chrome -> thao tác -> đóng)
+            # Gọi hàm click
             perform_click()
 
             delay = random.uniform(2, 4)
