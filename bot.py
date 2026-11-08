@@ -1,3 +1,4 @@
+import datetime
 import gc
 import os
 import time
@@ -21,6 +22,26 @@ app = Flask(__name__)
 def keep_alive():
     return "Render thấy web sống, còn Bot Selenium thì đang cày ngầm (Mở/Đóng mỗi lượt)!"
 
+
+def get_dynamic_delay():
+    utc_now = datetime.datetime.now(datetime.timezone.utc)
+    vn_time = utc_now + datetime.timedelta(hours=7)
+    hour = vn_time.hour
+
+    # Mục tiêu: ~284 clicks/ngày/máy -> 3 máy sẽ đạt ~852 clicks/ngày
+    # 22 ngày * 852 = ~18,744 clicks + 300 (vốn) = ~19,044 clicks.
+
+    if 0 <= hour < 6:
+        # Đêm khuya: Trung bình 25 phút/lượt. (Gánh ~14 clicks)
+        return random.uniform(1200, 1800)
+
+    elif 11 <= hour < 14 or 19 <= hour < 24:
+        # Giờ cao điểm (Trưa & Tối): Trung bình ~3 phút/lượt. (Gánh ~164 clicks)
+        return random.uniform(130, 220)
+
+    else:
+        # Giờ hành chính (Sáng & Chiều): Trung bình ~5.5 phút/lượt. (Gánh ~106 clicks)
+        return random.uniform(240, 440)
 
 def force_kill_chrome():
     try:
@@ -98,7 +119,7 @@ def run_bot_forever():
             # Gọi hàm click
             perform_click()
 
-            delay = random.uniform(2, 4)
+            delay = get_dynamic_delay()
             print(f"[*] Chờ {delay:.2f}s trước khi mở cửa sổ mới...")
 
             # Dọn RAM định kỳ mỗi 10 lượt
