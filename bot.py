@@ -1,3 +1,5 @@
+import gc
+import os
 import time
 import random
 import threading
@@ -18,12 +20,24 @@ app = Flask(__name__)
 
 @app.route('/')
 def keep_alive():
-    return "Render thấy web sống, còn Bot Selenium thì đang cày ngầm!"
+    return "Render thấy web sống, còn Bot Selenium thì đang cày ngầm (Mở/Đóng mỗi lượt)!"
+
+
+def force_kill_chrome():
+    try:
+        if os.name == 'nt':
+            os.system("taskkill /f /im chrome.exe >nul 2>&1")
+            os.system("taskkill /f /im chromedriver.exe >nul 2>&1")
+        else:
+            os.system("killall -9 chrome chromedriver 2>/dev/null")
+    except:
+        pass
 
 
 def perform_click():
+    """Khởi tạo, thao tác và đóng hẳn trình duyệt trong cùng 1 lượt"""
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless=new")
+    # options.add_argument("--headless=new")
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
@@ -44,16 +58,13 @@ def perform_click():
     driver = webdriver.Chrome(options=options)
     try:
         driver.get(TARGET_URL)
-        wait = WebDriverWait(driver, 15)  # Nới lên 15s cho an toàn
+        wait = WebDriverWait(driver, 15)
 
-        # SỬA LỖI 1: Chờ đến khi nút thực sự ở trạng thái "có thể click"
+        # Chờ, cuộn trang và click
         button_yes_iwill = wait.until(EC.element_to_be_clickable((By.ID, BUTTON_ID)))
-
-        # SỬA LỖI 2: Cuộn màn hình để ép cái nút ra chính giữa, né các thanh menu bị ghim ở đỉnh/đáy màn hình
         driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", button_yes_iwill)
-        time.sleep(0.5)  # Đợi một nhịp cực ngắn để hiệu ứng cuộn dừng hẳn
+        time.sleep(0.5)
 
-        # SỬA LỖI 3: Dùng JS ép click xuyên qua mọi layer vô hình đang đè lên
         driver.execute_script("arguments[0].click();", button_yes_iwill)
         print("[+] Đã click 'Yes I will'. Cắt bỏ hoàn toàn Sponsor!")
 
@@ -62,32 +73,50 @@ def perform_click():
     except Exception as e:
         print(f"[-] Lỗi lượt chạy: {e}")
     finally:
-        driver.quit()
+        # Chắc chắn đóng Chrome ở cuối lượt
+        try:
+            driver.quit()
+        except:
+            pass
 
 
 def run_bot_forever():
     """Hàm chạy ngầm vòng lặp vô tận của Bot"""
-    print("🚀 Bắt đầu tool auto-click chạy ngầm. Bấm Ctrl+C để dừng.")
+    print("🚀 Bắt đầu tool auto-click (Cơ chế Đóng/Mở liên tục). Bấm Ctrl+C để dừng.")
+
+    # Dọn dẹp tàn dư trước khi vào lặp
+    force_kill_chrome()
     count = 1
+
     try:
         while True:
             print(f"--- Vòng lặp thứ {count} ---")
-            perform_click()
-            count += 1
 
-            # Delay ngẫu nhiên giữa các lần mở trình duyệt để tránh bị ban IP quá nhanh
-            delay = random.uniform(2, 5)
+            # Gọi hàm click (tự động mở Chrome -> thao tác -> đóng)
+            perform_click()
+
+            delay = random.uniform(2, 4)
             print(f"[*] Chờ {delay:.2f}s trước khi mở cửa sổ mới...")
+
+            # Dọn RAM định kỳ mỗi 10 lượt
+            if count % 50 == 0:
+                force_kill_chrome()
+                print("[*] Dọn RAM xong!")
+                gc.collect()
+
+            count += 1
             time.sleep(delay)
 
     except KeyboardInterrupt:
         print("\n🛑 Đã dừng tool theo yêu cầu (Ctrl+C).")
+    finally:
+        force_kill_chrome()
 
 
 if __name__ == "__main__":
-    # 1. Bật bot Selenium chạy ở một luồng riêng biệt (Daemon Thread)
+    # 1. Bật bot Selenium chạy ở một luồng riêng biệt
     bot_thread = threading.Thread(target=run_bot_forever, daemon=True)
     bot_thread.start()
 
-    # 2. Bật Web Server giả ở luồng chính để Render kiểm tra qua môn
+    # 2. Bật Web Server giả ở luồng chính để qua mặt bài test Timed Out của Render
     app.run(host='0.0.0.0', port=10000)
