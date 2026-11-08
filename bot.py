@@ -11,7 +11,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 # Cấu hình
-TARGET_URL = "https://weluvunited.com/glazers-out?ref=trongtai"
+TARGET_URL = "https://weluvunited.com/ads?ref=trongtai&lang=vi"
 BUTTON_ID = "btn-yes-i-will"
 
 # Khởi tạo Web Server giả
