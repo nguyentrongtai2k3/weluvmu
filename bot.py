@@ -89,7 +89,7 @@ def perform_click():
         viewport_height = driver.execute_script("return window.innerHeight")
 
         if total_height > viewport_height:
-            scroll_steps = random.randint(1, 3)
+            scroll_steps = random.randint(1, 20)
             print(f"[*] Đang giả lập lướt web (Cuộn ngẫu nhiên {scroll_steps} nhịp để qua mặt GA)...")
             for _ in range(scroll_steps):
                 random_y = random.randint(100, total_height - viewport_height)
