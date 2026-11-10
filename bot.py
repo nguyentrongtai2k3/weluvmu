@@ -16,6 +16,7 @@ BUTTON_ID = "btn-yes-i-will"
 LET_DO_IT_XPATH = "/html/body/div[2]/div/div/div[2]/button[2]"
 SPONSOR_XPATH = "/html/body/div[2]/div/main/section[2]/div/div[1]/div/div[2]/div/div[1]/button[1]"
 DONE_BTN_XPATH = "/html/body/div[2]/div/main/section[2]/div/div[1]/div/div[2]/div/div[2]/button"
+FINAL_BTN_XPATH = "/html/body/div[2]/div/main/section[2]/div/div[1]/div/div[3]/div[2]/div/button"
 
 # Khởi tạo Web Server giả
 app = Flask(__name__)
@@ -31,20 +32,23 @@ def get_dynamic_delay():
     vn_time = utc_now + datetime.timedelta(hours=7)
     hour = vn_time.hour
 
-    # Mục tiêu: ~284 clicks/ngày/máy -> 3 máy sẽ đạt ~852 clicks/ngày
-    # 22 ngày * 852 = ~18,744 clicks + 300 (vốn) = ~19,044 clicks.
+    # Mục tiêu: ~285 clicks/ngày/máy -> 3 máy sẽ đạt ~855 clicks/ngày
+    # Đã trừ hao ~60 giây thời gian bot chạy thực tế.
 
     if 0 <= hour < 6:
-        # Đêm khuya: Trung bình 25 phút/lượt. (Gánh ~14 clicks)
-        return random.uniform(1200, 1800)
+        # Đêm khuya: Chờ ngẫu nhiên 20 - 25 phút/lượt.
+        # Sinh ra khoảng ~15 clicks
+        return random.uniform(1200, 1500)
 
     elif 11 <= hour < 14 or 19 <= hour < 24:
-        # Giờ cao điểm (Trưa & Tối): Trung bình ~3 phút/lượt. (Gánh ~164 clicks)
-        return random.uniform(130, 220)
+        # Giờ cao điểm (Trưa & Tối): Chờ ngẫu nhiên 1.5 - 2.8 phút/lượt.
+        # Sinh ra khoảng ~150 clicks
+        return random.uniform(100, 170)
 
     else:
-        # Giờ hành chính (Sáng & Chiều): Trung bình ~5.5 phút/lượt. (Gánh ~106 clicks)
-        return random.uniform(240, 440)
+        # Giờ hành chính (Sáng & Chiều): Chờ ngẫu nhiên 3 - 5 phút/lượt.
+        # Sinh ra khoảng ~120 clicks
+        return random.uniform(180, 300)
 
 def force_kill_chrome():
     try:
@@ -156,6 +160,11 @@ def perform_click():
             wait = WebDriverWait(driver, 15)
             done_btn = wait.until(EC.element_to_be_clickable((By.XPATH, DONE_BTN_XPATH)))
             driver.execute_script("arguments[0].click();", done_btn)
+            time.sleep(random.uniform(0.5, 2.4))
+            wait = WebDriverWait(driver, 15)
+            if random.randint(0, 1) == 1:
+                final_btn = wait.until(EC.element_to_be_clickable((By.XPATH, FINAL_BTN_XPATH)))
+                driver.execute_script("arguments[0].click();", done_btn)
             print("[+] Đã click 'Done!. Hoàn thành luồng !")
         except Exception as e:
             print(f"[-] Lỗi trong quá trình click sponsor: {e}")
