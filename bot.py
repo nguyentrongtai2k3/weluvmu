@@ -36,19 +36,19 @@ def get_dynamic_delay():
     # Đã trừ hao ~60 giây thời gian bot chạy thực tế.
 
     if 0 <= hour < 6:
-        # Đêm khuya: Chờ ngẫu nhiên 20 - 25 phút/lượt.
+        # Đêm khuya: Chờ ngẫu nhiên 10 - 12 phút/lượt.
         # Sinh ra khoảng ~15 clicks
-        return random.uniform(1200, 1500)
+        return random.uniform(600, 750)
 
     elif 11 <= hour < 14 or 19 <= hour < 24:
         # Giờ cao điểm (Trưa & Tối): Chờ ngẫu nhiên 1.5 - 2.8 phút/lượt.
         # Sinh ra khoảng ~150 clicks
-        return random.uniform(100, 170)
+        return random.uniform(40, 70)
 
     else:
         # Giờ hành chính (Sáng & Chiều): Chờ ngẫu nhiên 3 - 5 phút/lượt.
         # Sinh ra khoảng ~120 clicks
-        return random.uniform(180, 300)
+        return random.uniform(70, 120)
 
 def force_kill_chrome():
     try:
@@ -194,7 +194,7 @@ def run_bot_forever():
             # Gọi hàm click
             perform_click()
 
-            delay = get_dynamic_delay()
+            delay = random.uniform(10, 20)
             print(f"[*] Chờ {delay:.2f}s trước khi mở cửa sổ mới...")
 
             # Dọn RAM định kỳ mỗi 50 lượt
