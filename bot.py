@@ -38,17 +38,17 @@ def get_dynamic_delay():
     if 0 <= hour < 6:
         # Đêm khuya: Chờ ngẫu nhiên 10 - 12 phút/lượt.
         # Sinh ra khoảng ~15 clicks
-        return random.uniform(600, 750)
+        return random.uniform(400, 600)
 
     elif 11 <= hour < 14 or 19 <= hour < 24:
         # Giờ cao điểm (Trưa & Tối): Chờ ngẫu nhiên 1.5 - 2.8 phút/lượt.
         # Sinh ra khoảng ~150 clicks
-        return random.uniform(40, 70)
+        return random.uniform(30, 60)
 
     else:
         # Giờ hành chính (Sáng & Chiều): Chờ ngẫu nhiên 3 - 5 phút/lượt.
         # Sinh ra khoảng ~120 clicks
-        return random.uniform(70, 120)
+        return random.uniform(60, 90)
 
 def force_kill_chrome():
     try:
