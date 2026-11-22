@@ -14,8 +14,8 @@ from selenium.webdriver.support import expected_conditions as EC
 TARGET_URL = "https://weluvunited.com/ads?ref=trongtai&lang=vi"
 BUTTON_ID = "btn-yes-i-will"
 LET_DO_IT_XPATH = "/html/body/div[2]/div/div/div[2]/button[2]"
-DONE_BTN_XPATH = "/html/body/div[2]/div[1]/main/section[3]/div/div[1]/div/div[2]/div/div[2]/button"
-FINAL_BTN_XPATH = "/html/body/div[2]/div[1]/main/section[3]/div/div[1]/div/div[3]/div[2]/div/button"
+DONE_BTN_SELECTOR = "#actions div.mt-3.flex.items-center.gap-4.flex-wrap > button"
+FINAL_BTN_SELECTOR = "#actions div.fixed.inset-0 div.max-w-md > div > button"
 
 # Khởi tạo Web Server giả
 app = Flask(__name__)
@@ -131,11 +131,11 @@ def perform_click():
 
             for idx in sponsor_indices:
                 # Gắn index động vào XPath
-                dynamic_xpath = f"/html/body/div[2]/div[1]/main/section[3]/div/div[1]/div/div[2]/div/div[1]/button[{idx}]"
+                dynamic_selector = f"#actions div.grid.grid-cols-2 > button:nth-child({idx})"
                 try:
                     # Chờ 5s cho mỗi sponsor, không thấy thì bỏ qua nhanh để bấm cái khác
                     wait_sponsor = WebDriverWait(driver, 5)
-                    sponsor_el = wait_sponsor.until(EC.element_to_be_clickable((By.XPATH, dynamic_xpath)))
+                    sponsor_el = wait_sponsor.until(EC.element_to_be_clickable((By.CSS_SELECTOR, dynamic_selector)))
 
                     # Cuộn tới Sponsor đó và click
                     driver.execute_script("arguments[0].scrollIntoView({block: 'center', behavior: 'smooth'});",
@@ -156,12 +156,12 @@ def perform_click():
                     print(f"[-] Bỏ qua Sponsor số {idx} (Không tìm thấy hoặc không click được).")
             time.sleep(random.uniform(0.5, 2.4))
             wait = WebDriverWait(driver, 15)
-            done_btn = wait.until(EC.element_to_be_clickable((By.XPATH, DONE_BTN_XPATH)))
+            done_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, DONE_BTN_SELECTOR)))
             driver.execute_script("arguments[0].click();", done_btn)
             time.sleep(random.uniform(0.5, 2.4))
             wait = WebDriverWait(driver, 15)
             if random.randint(0, 1) == 1:
-                final_btn = wait.until(EC.element_to_be_clickable((By.XPATH, FINAL_BTN_XPATH)))
+                final_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, FINAL_BTN_SELECTOR)))
                 driver.execute_script("arguments[0].click();", done_btn)
             print("[+] Đã click 'Done!. Hoàn thành luồng !")
         except Exception as e:
@@ -190,12 +190,12 @@ def run_bot_forever():
             # Gọi hàm click
             perform_click()
 
-            delay = get_dynamic_delay()
+            delay = random.uniform(5, 30)
             print(f"[*] Chờ {delay:.2f}s trước khi mở cửa sổ mới...")
 
             # Dọn RAM định kỳ mỗi 50 lượt
             if count % 50 == 0 and count != 1:
-                # force_kill_chrome()
+                force_kill_chrome()
                 print("[*] Dọn RAM xong!")
                 gc.collect()
 
