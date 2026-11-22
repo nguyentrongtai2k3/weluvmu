@@ -190,7 +190,7 @@ def run_bot_forever():
             # Gọi hàm click
             perform_click()
 
-            delay = random.uniform(5, 30)
+            delay = get_dynamic_delay()
             print(f"[*] Chờ {delay:.2f}s trước khi mở cửa sổ mới...")
 
             # Dọn RAM định kỳ mỗi 50 lượt
